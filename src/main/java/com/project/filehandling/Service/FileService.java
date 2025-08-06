@@ -9,5 +9,6 @@ import java.util.Optional;
 public interface FileService {
     FileEntity uploadFile(MultipartFile file) throws IOException;
 
-    Optional<FileEntity> getFile(String FileName);
+    Optional<FileEntity> getFileByFileName(String FileName);
+    Optional<FileEntity> getFileByFileId(Long fileId);
 }

@@ -25,12 +25,18 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public FileEntity uploadFile(MultipartFile file) throws IOException {
+
         Path uploadPath = Paths.get(uploadDir);
+
+
         if (!Files.exists(uploadPath)){
             Files.createDirectories(uploadPath);
         }
         String fileName = file.getOriginalFilename();
+
         Path filePath = uploadPath.resolve(fileName);
+
+        System.out.println(" File path: " + filePath);
 
         Files.copy(file.getInputStream(),filePath, StandardCopyOption.REPLACE_EXISTING);
 
@@ -41,8 +47,13 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Optional<FileEntity> getFile(String FileName) {
+    public Optional<FileEntity> getFileByFileName(String FileName) {
         return fileRepository.findByFileName(FileName);
+    }
+
+    @Override
+    public Optional<FileEntity> getFileByFileId(Long fileId) {
+        return fileRepository.findByFileId(fileId);
     }
 
 
