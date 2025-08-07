@@ -3,7 +3,9 @@ package com.project.filehandling.ServiceImpl;
 import com.project.filehandling.ExceptionHandling.FileNotFoundException;
 import com.project.filehandling.ExceptionHandling.FileSavingException;
 import com.project.filehandling.Model.FileEntity;
+import com.project.filehandling.Model.NewFileEntity;
 import com.project.filehandling.Repository.FileRepository;
+import com.project.filehandling.Repository.NewFileEntityRepository;
 import com.project.filehandling.ResponseData;
 import com.project.filehandling.Service.FileService;
 import org.springframework.core.io.Resource;
@@ -22,9 +24,11 @@ import java.util.Optional;
 @Service
 public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
+    private final NewFileEntityRepository newFileEntityRepository;
 
-    public FileServiceImpl(FileRepository fileRepository) {
+    public FileServiceImpl(FileRepository fileRepository, NewFileEntityRepository newFileEntityRepository) {
         this.fileRepository = fileRepository;
+        this.newFileEntityRepository = newFileEntityRepository;
     }
 
     private final String uploadDir = "F:\\springboot_file_upload_demo\\";
@@ -59,7 +63,7 @@ public class FileServiceImpl implements FileService {
 
 
 
-    public ResponseData downloadFile(Long fileId) {
+    public ResponseData getFile(Long fileId) {
         return fileRepository.findById(fileId)
                 .map(fileEntity -> {
                     try {
@@ -75,6 +79,29 @@ public class FileServiceImpl implements FileService {
                     }
                 })
                 .orElseThrow(() -> new FileNotFoundException("File not found"));
+    }
+
+    @Override
+    public NewFileEntity uploadFileToDB(MultipartFile file) throws IOException {
+        String fileName = file.getOriginalFilename();
+
+        try{
+            if (fileName.contains("..")){
+                throw new FileSavingException("Filename contains invalid path sequence "
+                        + fileName);
+            }
+            NewFileEntity newFileEntity = new NewFileEntity(fileName,file.getContentType(), file.getSize(),file.getBytes());
+            return  newFileEntityRepository.save(newFileEntity);
+        }catch (IOException e){
+            throw new FileSavingException("Could not save file");
+        }
+
+    }
+
+    @Override
+    public NewFileEntity getFileFromDB(Long fileId) throws IOException {
+        return newFileEntityRepository.findById(fileId)
+                .orElseThrow(()-> new FileNotFoundException("File not found"));
     }
 
 
