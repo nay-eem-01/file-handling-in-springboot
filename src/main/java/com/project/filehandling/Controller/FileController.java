@@ -1,5 +1,6 @@
 package com.project.filehandling.Controller;
 
+import com.project.filehandling.ExceptionHandling.FileSavingException;
 import com.project.filehandling.Model.FileEntity;
 import com.project.filehandling.ResponseData;
 import com.project.filehandling.Service.FileService;
@@ -12,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/file")
@@ -38,6 +41,19 @@ public class FileController {
 
         return new ResponseData(savedFile.getFileId(), savedFile.getFileName(), savedFile.getFileType(), savedFile.getFileSize(), downloadURl);
 
+    }
+
+    @PostMapping("/uploadMultipleFiles")
+    public List<ResponseData> uploadMultipleFiles(@RequestParam("files") MultipartFile [] files){
+        return Arrays.stream(files)
+                .map(file -> {
+                    try {
+                        return uploadFile(file);
+                    } catch (IOException e) {
+                        throw new FileSavingException("File uploading failed");
+                    }
+                })
+                .toList();
     }
 
 
